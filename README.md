@@ -1,5 +1,6 @@
 # To start
 `mvn clean install`
+
 `docker-compose up`
 
 # Run standalone server
