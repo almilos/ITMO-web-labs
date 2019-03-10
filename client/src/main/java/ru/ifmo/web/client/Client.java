@@ -26,6 +26,9 @@ public class Client {
         case -1:
           System.out.println( "\n1. Show all Metallica members" );
           System.out.println( "2. Search member" );
+          System.out.println( "3. Add member" );
+          System.out.println( "4. Update member" );
+          System.out.println( "5. Delete member" );
           System.out.println( "0. Exit" );
           currentState = readState( currentState, reader );
           break;
@@ -39,7 +42,7 @@ public class Client {
                 metallicaPort.findAll( ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
               }
               catch( SQLException_Exception ex ) {
-                System.out.println( "SQL request failed" );
+                System.out.println( "SQL query failed" );
               }
             }
           });
@@ -76,7 +79,7 @@ public class Client {
                 metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
               }
               catch( SQLException_Exception ex ) {
-                System.out.println( "SQL request failed" );
+                System.out.println( "SQL query failed" );
               }
             }
           });
@@ -85,7 +88,89 @@ public class Client {
           currentState = -1;
 
           break;
-        
+
+        case 3:
+          System.out.println( "name:" );
+          String c_name = readString( reader );
+          if( c_name == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "instrument:" );
+          String c_instrument = readString( reader );
+          if( c_instrument == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "entrydate(yyyy-mm-dd):" );
+          XMLGregorianCalendar c_entrydate = readDate( reader );
+          if( c_entrydate == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "networth:" );
+          Integer c_networth = readInteger( reader );
+          if( c_networth == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "birthdate(yyyy-mm-dd):" );
+          XMLGregorianCalendar c_birthdate = readDate( reader );
+          metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+
+          currentState = -1;
+        break;
+
+        case 4:
+          System.out.println( "id:" );
+          Long u_id = readLong( reader );
+          if( u_id == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "name:" );
+          String u_name = readString( reader );
+
+          System.out.println( "instrument:" );
+          String u_instrument = readString( reader );
+
+          System.out.println( "entrydate(yyyy-mm-dd):" );
+          XMLGregorianCalendar u_entrydate = readDate( reader );
+
+          System.out.println( "networth:" );
+          Integer u_networth = readInteger( reader );
+
+          System.out.println( "birthdate(yyyy-mm-dd):" );
+          XMLGregorianCalendar u_birthdate = readDate( reader );
+
+          metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
+
+          currentState = -1;
+          break;   
+
+        case 5:
+          System.out.println( "id:" );
+          Long d_id = readLong( reader );
+          if( d_id == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          metallicaPort.delete( d_id );
+          currentState = -1;
+          break;
+
         case 0:
           return;
 
@@ -149,13 +234,12 @@ public class Client {
   }
 
   private static String metallicaToString( Metallica metallica ) {
-    return "Metallica(" +
-        "name=" + metallica.getName() +
-        ", instrument=" + metallica.getInstrument() +
-        ", entrydate=" + metallica.getEntrydate() +
-        ", networth=" + metallica.getNetworth() +
-        ", birthdate=" + metallica.getBirthdate() +
-        ")";
+    return metallica.getId( ) + ". " +
+      metallica.getName( ) + ", " +
+      "plays: " + metallica.getInstrument( ) + ", " + 
+      "entered: " + metallica.getEntrydate( ) + ", " +
+      "networth: " + metallica.getNetworth( ) + ", " +
+      "birthdate: " + metallica.getBirthdate( );
   }
 
 }

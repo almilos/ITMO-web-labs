@@ -24,6 +24,36 @@ public class MetallicaService {
   }
 
   @WebMethod
+  public Long create(
+    @WebParam( name = "name" ) String name,          
+    @WebParam( name = "instrument" ) String instrument,
+    @WebParam( name = "entrydate" ) Date entrydate,
+    @WebParam( name = "networth" ) Integer networth, 
+    @WebParam( name = "birthdate" ) Date birthdate
+  ) throws SQLException {
+    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
+  }
+
+  @WebMethod
+  public int update(
+    @WebParam( name = "id" ) Long id, 
+    @WebParam( name = "name" ) String name,          
+    @WebParam( name = "instrument" ) String instrument,
+    @WebParam( name = "entrydate" ) Date entrydate,
+    @WebParam( name = "networth" ) Integer networth, 
+    @WebParam( name = "birthdate" ) Date birthdate
+  ) throws SQLException {
+    return metallicaDAO.update( id, name, instrument, entrydate, networth, birthdate );
+  }
+
+  @WebMethod
+  public int delete(
+    @WebParam( name = "id" ) Long id
+  ) throws SQLException {
+    return metallicaDAO.delete( id );
+  }
+
+  @WebMethod
   public List<Metallica> findWithFilters(
     @WebParam( name = "id" ) Long id, 
     @WebParam( name = "name" ) String name,                  
