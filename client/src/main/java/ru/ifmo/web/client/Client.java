@@ -19,6 +19,7 @@ public class Client {
     BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
     int currentState = -1;
 
+    Thread thr;
     while( true ) {
       switch( currentState ) {
 
@@ -31,7 +32,19 @@ public class Client {
 
         case 1:
           System.out.println( "Found:" );
-          metallicaPort.findAll( ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
+          thr = new Thread( new Runnable() 
+          {
+            public void run() {
+              try {
+                metallicaPort.findAll( ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
+              }
+              catch( SQLException_Exception ex ) {
+                System.out.println( "SQL request failed" );
+              }
+            }
+          });
+          thr.start( );
+
           currentState = -1;
           break;
 
@@ -56,7 +69,19 @@ public class Client {
 
           System.out.println( "Found:" );
 
-          metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
+          thr = new Thread( new Runnable() 
+          {
+            public void run() {
+              try {
+                metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
+              }
+              catch( SQLException_Exception ex ) {
+                System.out.println( "SQL request failed" );
+              }
+            }
+          });
+          thr.start( );
+
           currentState = -1;
 
           break;
