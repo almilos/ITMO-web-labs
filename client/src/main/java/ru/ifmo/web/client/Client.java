@@ -124,7 +124,13 @@ public class Client {
 
           System.out.println( "birthdate(yyyy-mm-dd):" );
           XMLGregorianCalendar c_birthdate = readDate( reader );
-          metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+          Long new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+
+          if( new_id != null ) {
+            System.out.println( "New ID " + new_id.toString( ) );
+          } else {
+            System.out.println( "SQL query failed" );
+          }
 
           currentState = -1;
         break;
@@ -153,8 +159,13 @@ public class Client {
           System.out.println( "birthdate(yyyy-mm-dd):" );
           XMLGregorianCalendar u_birthdate = readDate( reader );
 
-          metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
+          int u_ret = metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
 
+          if( u_ret > 0 ) {
+            System.out.println( "OK" );
+          } else {
+            System.out.println( "FAIL" );
+          }
           currentState = -1;
           break;   
 
@@ -167,7 +178,13 @@ public class Client {
             break;
           }
 
-          metallicaPort.delete( d_id );
+          int d_ret = metallicaPort.delete( d_id );
+
+          if( d_ret > 0 ) {
+            System.out.println( "OK" );
+          } else {
+            System.out.println( "FAIL" );
+          }
           currentState = -1;
           break;
 
