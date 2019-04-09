@@ -11,17 +11,18 @@ CREATE TABLE metallica
   instrument  VARCHAR(50),
   entrydate   DATE,
   networth    INT,
-  birthdate   DATE
+  birthdate   DATE,
+  binfield    BYTEA
 );
 
-INSERT INTO metallica( name, instrument, entrydate, networth, birthdate )
-VALUES( 'James Hetfield', 'Guitar', '1981.10.28', 300000000, '1963.08.03' );
+INSERT INTO metallica( name, instrument, entrydate, networth, birthdate, binfield )
+VALUES( 'James Hetfield', 'Guitar', '1981.10.28', 300000000, '1963.08.03', '\xDEADBEEF' );
 
-INSERT INTO metallica( name, instrument, entrydate, networth, birthdate )
-VALUES( 'Lars Ulrich', 'Drums', '1981.10.28', 300000000, '1963.12.26' );
+INSERT INTO metallica( name, instrument, entrydate, networth, birthdate, binfield)
+VALUES( 'Lars Ulrich', 'Drums', '1981.10.28', 300000000, '1963.12.26', '\xBABADEAF');
 
-INSERT INTO metallica( name, instrument, entrydate, networth, birthdate )
-VALUES( 'Kirk Hammet', 'Guitar', '1983.04.01', 200000000, '1962.11.18' );
+INSERT INTO metallica( name, instrument, entrydate, networth, birthdate, binfield)
+VALUES( 'Kirk Hammet', 'Guitar', '1983.04.01', 200000000, '1962.11.18', '\xDEAFDADD');
 
-INSERT INTO metallica( name, instrument, entrydate, networth, birthdate )
-VALUES( 'Robert Trujillo', 'Bass', '1983.04.01', 20000000, '1964.10.23' );
+INSERT INTO metallica( name, instrument, entrydate, networth, birthdate, binfield)
+VALUES( 'Robert Trujillo', 'Bass', '1983.04.01', 20000000, '1964.10.23', '\xBEEFBABA');

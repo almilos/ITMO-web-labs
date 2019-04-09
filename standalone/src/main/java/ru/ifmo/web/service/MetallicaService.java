@@ -29,9 +29,10 @@ public class MetallicaService {
     @WebParam( name = "instrument" ) String instrument,
     @WebParam( name = "entrydate" ) Date entrydate,
     @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
+    @WebParam( name = "birthdate" ) Date birthdate,
+    @WebParam( name = "binfield" ) byte[] binfield
   ) throws SQLException {
-    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
+    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate, binfield );
   }
 
   @WebMethod
@@ -65,4 +66,10 @@ public class MetallicaService {
     return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
   }
 
+  @WebMethod
+  public byte[] getBinfield(
+    @WebParam( name = "id" ) Long id
+    ) throws SQLException {
+      return metallicaDAO.getBinfield( id );
+  }
 }

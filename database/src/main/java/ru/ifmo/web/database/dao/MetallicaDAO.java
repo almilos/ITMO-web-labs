@@ -31,8 +31,9 @@ public class MetallicaDAO {
   private final String ENTRYDATE =  "entrydate";
   private final String NETWORTH =   "networth";
   private final String BIRTHDATE =  "birthdate";
+  private final String BINFIELD =   "binfield";
 
-  private final List<String> columnNames = Arrays.asList( ID, NAME, INSTRUMENT, ENTRYDATE, NETWORTH, BIRTHDATE );
+  private final List<String> columnNames = Arrays.asList( ID, NAME, INSTRUMENT, ENTRYDATE, NETWORTH, BIRTHDATE, BINFIELD );
 
   @Data
   @AllArgsConstructor
@@ -127,14 +128,14 @@ public class MetallicaDAO {
 
   }
 
-  public Long create( String name, String instrument, Date entrydate, Integer networth, Date birthdate ) throws SQLException {
+  public Long create( String name, String instrument, Date entrydate, Integer networth, Date birthdate, byte[] binfield ) throws SQLException {
 
     try( Connection conn = dataSource.getConnection( ) ) {
       conn.setAutoCommit( false );
 
       StringBuilder query = new StringBuilder( );
 
-      query.append( "INSERT INTO " ).append( TABLE_NAME ).append( "(" ).append( String.join( ",", columnNames ) ).append( ") VALUES(?,?,?,?,?,?)" );
+      query.append( "INSERT INTO " ).append( TABLE_NAME ).append( "(" ).append( String.join( ",", columnNames ) ).append( ") VALUES(?,?,?,?,?,?,?)" );
       long newId;
 
       try( java.sql.Statement idStatement = conn.createStatement( ) ) {
@@ -153,6 +154,7 @@ public class MetallicaDAO {
         stmnt.setDate( 4, new java.sql.Date( entrydate.getTime( ) ) );
         stmnt.setInt( 5, networth);
         stmnt.setDate( 6, new java.sql.Date( birthdate.getTime( ) ) );
+        stmnt.setBytes( 7, binfield );
         int count = stmnt.executeUpdate( );
 
         if( count == 0 ) throw new RuntimeException("SQL query failed");
@@ -163,6 +165,33 @@ public class MetallicaDAO {
 
       return newId;
     }
+  }
+
+  public byte[] getBinfield( Long id ) throws SQLException {
+
+    StringBuilder query = new StringBuilder( );
+    query.append( "SELECT " ).append( BINFIELD ).append( " FROM " ).append( TABLE_NAME ).append( " WHERE " );
+    
+    int i = 1;
+    
+    List<Statement> statements = new ArrayList<>( );
+    
+    if( id != null ) {
+      query.append( ID ).append( "= ?" );
+      statements.add( new Statement( i, id, Types.BIGINT ) );
+      i++;
+    }
+
+    log.debug( query.toString( ) );
+
+    try( Connection conn = dataSource.getConnection( ) ) {
+      PreparedStatement ps = conn.prepareStatement( query.toString( ) );
+      fillPreparedStatement( ps, statements );
+      ResultSet rs = ps.executeQuery( );
+      rs.next( );
+      return rs.getBytes( BINFIELD );
+    }
+
   }
 
   public int update( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) throws SQLException {
@@ -249,7 +278,7 @@ public class MetallicaDAO {
     Date entrydate = rs.getDate( ENTRYDATE );
     Integer networth = rs.getInt( NETWORTH );
     Date birthdate = rs.getDate( BIRTHDATE );
-    return new Metallica( id, name, instrument, entrydate, networth, birthdate );
+    return new Metallica( id, name, instrument, entrydate, networth, birthdate, null );
   }
 
   private void fillPreparedStatement( PreparedStatement ps, List<Statement> statements ) throws SQLException {

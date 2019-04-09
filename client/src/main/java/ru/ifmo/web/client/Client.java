@@ -52,7 +52,7 @@ public class Client {
           break;
 
         case 2:
-          System.out.println("id:");
+          System.out.println( "id:" );
           Long id = readLong( reader );
 
           System.out.println( "name:" );
@@ -77,6 +77,11 @@ public class Client {
             public void run() {
               try {
                 metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
+                if( id != null ) {
+                  byte[] a = metallicaPort.getBinfield( id );
+                  for( int j = 0; j < a.length; j++ ) System.out.format( "%02X", a[j] );
+                  System.out.println();
+                }
               }
               catch( SQLException_Exception ex ) {
                 System.out.println( "SQL query failed" );
@@ -124,7 +129,23 @@ public class Client {
 
           System.out.println( "birthdate(yyyy-mm-dd):" );
           XMLGregorianCalendar c_birthdate = readDate( reader );
-          Long new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+          if( c_birthdate == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "binfield:" );
+          String str_binfield = readString( reader );
+          if( str_binfield == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          byte[] c_binfield = str_binfield.getBytes( );
+
+          Long new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate, c_binfield );
 
           if( new_id != null ) {
             System.out.println( "New ID " + new_id.toString( ) );

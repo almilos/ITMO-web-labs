@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import ru.ifmo.web.database.dao.MetallicaDAO;
 import ru.ifmo.web.database.entity.Metallica;
 
+import java.io.IOException;
+
 import javax.inject.Inject;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -31,9 +33,10 @@ public class MetallicaService {
     @WebParam( name = "instrument" ) String instrument,
     @WebParam( name = "entrydate" ) Date entrydate,
     @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
+    @WebParam( name = "birthdate" ) Date birthdate,
+    @WebParam( name = "binfield" ) byte[] binfield
   ) throws SQLException {
-    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
+    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate, binfield );
   }
 
   @WebMethod
@@ -65,5 +68,13 @@ public class MetallicaService {
     @WebParam( name = "birthdate" ) Date birthdate
   ) throws SQLException {
     return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
+  }
+
+  //@WebMethod(operationName = "getBinfield")
+  @WebMethod
+  public byte[] getBinfield(
+    @WebParam( name = "id" ) Long id
+    ) throws SQLException {
+      return metallicaDAO.getBinfield( id );
   }
 }
