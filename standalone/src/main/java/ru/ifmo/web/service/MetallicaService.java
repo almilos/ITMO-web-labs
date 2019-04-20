@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import ru.ifmo.web.service.exception.MetallicaServiceException;
+
 @WebService( serviceName = "metallica", targetNamespace = "metallica_namespace" )
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,8 +21,12 @@ public class MetallicaService {
   private MetallicaDAO metallicaDAO;
 
   @WebMethod
-  public List<Metallica> findAll( ) throws SQLException {
-    return metallicaDAO.findAll( );
+  public List<Metallica> findAll( ) throws MetallicaServiceException {
+    try {
+      return metallicaDAO.findAll( );
+    } catch( SQLException e ) {
+      throw new MetallicaServiceException( e.getMessage( ) );
+    }
   }
 
   @WebMethod
@@ -30,8 +36,12 @@ public class MetallicaService {
     @WebParam( name = "entrydate" ) Date entrydate,
     @WebParam( name = "networth" ) Integer networth, 
     @WebParam( name = "birthdate" ) Date birthdate
-  ) throws SQLException {
-    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
+  ) throws MetallicaServiceException {
+    try {
+      return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
+    } catch( SQLException e ) {
+      throw new MetallicaServiceException( e.getMessage( ) );
+    }
   }
 
   @WebMethod
@@ -42,15 +52,29 @@ public class MetallicaService {
     @WebParam( name = "entrydate" ) Date entrydate,
     @WebParam( name = "networth" ) Integer networth, 
     @WebParam( name = "birthdate" ) Date birthdate
-  ) throws SQLException {
-    return metallicaDAO.update( id, name, instrument, entrydate, networth, birthdate );
+  ) throws MetallicaServiceException {
+    try {
+      int ret = metallicaDAO.update( id, name, instrument, entrydate, networth, birthdate );
+      if( ret == 0 )
+        throw new MetallicaServiceException( "No member with given ID" );
+      return ret;
+    } catch( SQLException e ) {
+      throw new MetallicaServiceException( e.getMessage( ) );
+    }
   }
 
   @WebMethod
   public int delete(
     @WebParam( name = "id" ) Long id
-  ) throws SQLException {
-    return metallicaDAO.delete( id );
+  ) throws MetallicaServiceException {
+    try {
+      int ret = metallicaDAO.delete( id );
+      if( ret == 0 )
+        throw new MetallicaServiceException( "No member with given ID" );
+      return ret;
+    } catch( SQLException e ) {
+      throw new MetallicaServiceException( e.getMessage( ) );
+    }
   }
 
   @WebMethod
@@ -61,8 +85,12 @@ public class MetallicaService {
     @WebParam( name = "entrydate" ) Date entrydate,
     @WebParam( name = "networth" ) Integer networth, 
     @WebParam( name = "birthdate" ) Date birthdate
-  ) throws SQLException {
-    return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
+  ) throws MetallicaServiceException {
+    try {
+      return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
+    } catch( SQLException e ) {
+      throw new MetallicaServiceException( e.getMessage( ) );
+    }
   }
 
 }

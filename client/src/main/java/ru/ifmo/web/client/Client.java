@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class Client {
-  public static void main( String... args ) throws SQLException_Exception, IOException {
+  public static void main( String... args ) throws IOException {
     URL url = new URL( "http://localhost:8080/metallica?wsdl" );
     Metallica_Service metallicaService = new Metallica_Service( url );
     MetallicaService metallicaPort = metallicaService.getMetallicaServicePort( );
@@ -41,8 +41,8 @@ public class Client {
               try {
                 metallicaPort.findAll( ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
               }
-              catch( SQLException_Exception ex ) {
-                System.out.println( "SQL query failed" );
+              catch( MetallicaServiceException ex ) {
+                System.out.println( ex.getFaultInfo( ) );
               }
             }
           });
@@ -78,8 +78,8 @@ public class Client {
               try {
                 metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
               }
-              catch( SQLException_Exception ex ) {
-                System.out.println( "SQL query failed" );
+              catch( MetallicaServiceException ex ) {
+                System.out.println( ex.getFaultInfo( ) );
               }
             }
           });
@@ -97,7 +97,7 @@ public class Client {
             currentState = -1;
             break;
           }
-
+          
           System.out.println( "instrument:" );
           String c_instrument = readString( reader );
           if( c_instrument == null ) {
@@ -124,12 +124,16 @@ public class Client {
 
           System.out.println( "birthdate(yyyy-mm-dd):" );
           XMLGregorianCalendar c_birthdate = readDate( reader );
-          Long new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
 
-          if( new_id != null ) {
+          Long new_id = null;
+          try {
+            new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+          }
+          catch( MetallicaServiceException ex ) {
+            System.out.println( ex.getFaultInfo( ) );
+          } 
+          if( new_id != 0 ) {
             System.out.println( "New ID " + new_id.toString( ) );
-          } else {
-            System.out.println( "SQL query failed" );
           }
 
           currentState = -1;
@@ -159,32 +163,35 @@ public class Client {
           System.out.println( "birthdate(yyyy-mm-dd):" );
           XMLGregorianCalendar u_birthdate = readDate( reader );
 
-          int u_ret = metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
-
-          if( u_ret > 0 ) {
-            System.out.println( "OK" );
-          } else {
-            System.out.println( "FAIL" );
+          int u_ret = 0;
+          try {
+            u_ret = metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
           }
+          catch( MetallicaServiceException ex ) {
+            System.out.println( ex.getFaultInfo( ) );
+          } 
+          if( u_ret != 0 ) {
+            System.out.println( "OK" );
+          }
+
           currentState = -1;
           break;   
 
         case 5:
           System.out.println( "id:" );
           Long d_id = readLong( reader );
-          if( d_id == null ) {
-            System.out.println( "Value is invalid or empty" );
-            currentState = -1;
-            break;
-          }
 
-          int d_ret = metallicaPort.delete( d_id );
-
-          if( d_ret > 0 ) {
+          int d_ret = 0;
+          try {
+            d_ret = metallicaPort.delete( d_id );
+          } 
+          catch( MetallicaServiceException ex ) {
+            System.out.println( ex.getFaultInfo( ) );
+          } 
+          if( d_ret != 0 ) {
             System.out.println( "OK" );
-          } else {
-            System.out.println( "FAIL" );
           }
+
           currentState = -1;
           break;
 
