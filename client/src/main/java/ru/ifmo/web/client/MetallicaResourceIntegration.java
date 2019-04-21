@@ -18,6 +18,9 @@ import java.text.SimpleDateFormat;
 public class MetallicaResourceIntegration {
   private final String findAllUrl = "http://localhost:8080/metallica/all";
   private final String filterUrl = "http://localhost:8080/metallica/filter";
+  private final String createUrl = "http://localhost:8080/metallica/create";
+  private final String updateUrl = "http://localhost:8080/metallica/update";
+  private final String deleteUrl = "http://localhost:8080/metallica/delete";
 
   private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -63,12 +66,97 @@ public class MetallicaResourceIntegration {
 
     ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-      log.debug( response.toString( ) );
       throw new IllegalStateException("Request failed");
     }
-    log.debug( response.toString( ) );
     GenericType<List<Metallica>> type = new GenericType<List<Metallica>>() {
     };
     return response.getEntity(type);
+  }
+
+  public Long create( String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
+    Client client = Client.create();
+    WebResource webResource = client.resource(createUrl);
+
+    if (name != null) {
+      webResource = webResource.queryParam("name", name);
+    }
+
+    if (instrument != null) {
+      webResource = webResource.queryParam("instrument", instrument);
+    }
+
+    if (entrydate != null) {
+      webResource = webResource.queryParam("entrydate", sdf.format(entrydate));
+    }
+
+    if (networth != null) {
+      webResource = webResource.queryParam("networth", networth + "");
+    }
+
+    if (birthdate != null) {
+      webResource = webResource.queryParam("birthdate", sdf.format(birthdate));
+    }
+
+    ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class);
+    if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+      throw new IllegalStateException("Request failed");
+    }
+    GenericType<String> type = new GenericType<String>() {
+    };
+    return Long.parseLong( response.getEntity(type) );
+  }
+
+  public int update( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
+    Client client = Client.create();
+    WebResource webResource = client.resource(updateUrl);
+
+    if (id != null) {
+      webResource = webResource.queryParam("id", id + "");
+    }
+
+    if (name != null) {
+      webResource = webResource.queryParam("name", name);
+    }
+
+    if (instrument != null) {
+      webResource = webResource.queryParam("instrument", instrument);
+    }
+
+    if (entrydate != null) {
+      webResource = webResource.queryParam("entrydate", sdf.format(entrydate));
+    }
+
+    if (networth != null) {
+      webResource = webResource.queryParam("networth", networth + "");
+    }
+
+    if (birthdate != null) {
+      webResource = webResource.queryParam("birthdate", sdf.format(birthdate));
+    }
+
+    ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class);
+    if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+      throw new IllegalStateException("Request failed");
+    }
+    GenericType<String> type = new GenericType<String>() {
+    };
+    return Integer.parseInt( response.getEntity(type) );
+  }
+
+  public int delete( Long id ) {
+    Client client = Client.create();
+    WebResource webResource = client.resource(deleteUrl);
+
+    if (id != null) {
+      webResource = webResource.queryParam("id", id + "");
+    }
+
+    ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
+    if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+      throw new IllegalStateException("Request failed");
+    }
+    GenericType<String> type = new GenericType<String>() {
+    };
+    return Integer.parseInt( response.getEntity(type) );
   }
 }

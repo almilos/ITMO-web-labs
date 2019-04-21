@@ -25,9 +25,9 @@ public class Client {
         case -1:
           System.out.println( "\n1. Show all Metallica members" );
           System.out.println( "2. Search member" );
-          /*System.out.println( "3. Add member" );
+          System.out.println( "3. Add member" );
           System.out.println( "4. Update member" );
-          System.out.println( "5. Delete member" );*/
+          System.out.println( "5. Delete member" );
           System.out.println( "0. Exit" );
           currentState = readState( currentState, reader );
           break;
@@ -66,6 +66,104 @@ public class Client {
 
           break;
 
+        case 3:
+          System.out.println( "name:" );
+          String c_name = readString( reader );
+          if( c_name == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "instrument:" );
+          String c_instrument = readString( reader );
+          if( c_instrument == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "entrydate(yyyy-mm-dd):" );
+          Date c_entrydate = readDate( reader );
+          if( c_entrydate == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "networth:" );
+          Integer c_networth = readInteger( reader );
+          if( c_networth == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "birthdate(yyyy-mm-dd):" );
+          Date c_birthdate = readDate( reader );
+          Long new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+
+          if( new_id != null ) {
+            System.out.println( "New ID " + new_id.toString( ) );
+          } else {
+            System.out.println( "SQL query failed" );
+          }
+
+          currentState = -1;
+        break;
+
+        case 4:
+          System.out.println( "id:" );
+          Long u_id = readLong( reader );
+          if( u_id == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "name:" );
+          String u_name = readString( reader );
+
+          System.out.println( "instrument:" );
+          String u_instrument = readString( reader );
+
+          System.out.println( "entrydate(yyyy-mm-dd):" );
+          Date u_entrydate = readDate( reader );
+
+          System.out.println( "networth:" );
+          Integer u_networth = readInteger( reader );
+
+          System.out.println( "birthdate(yyyy-mm-dd):" );
+          Date u_birthdate = readDate( reader );
+
+          int u_ret = metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
+
+          if( u_ret > 0 ) {
+            System.out.println( "OK" );
+          } else {
+            System.out.println( "FAIL" );
+          }
+          currentState = -1;
+          break;   
+
+        case 5:
+          System.out.println( "id:" );
+          Long d_id = readLong( reader );
+          if( d_id == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          int d_ret = metallicaPort.delete( d_id );
+
+          if( d_ret > 0 ) {
+            System.out.println( "OK" );
+          } else {
+            System.out.println( "FAIL" );
+          }
+          currentState = -1;
+          break;
 
         case 0:
           return;
