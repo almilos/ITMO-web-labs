@@ -1,96 +1,53 @@
 package ru.ifmo.web.service;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
+import ru.ifmo.web.standalone.App;
 import ru.ifmo.web.database.dao.MetallicaDAO;
 import ru.ifmo.web.database.entity.Metallica;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-import ru.ifmo.web.service.exception.MetallicaServiceException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
-@WebService( serviceName = "metallica", targetNamespace = "metallica_namespace" )
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
+@Slf4j
+@Path("/metallica")
+@Produces({MediaType.APPLICATION_JSON})
 public class MetallicaService {
   private MetallicaDAO metallicaDAO;
 
-  @WebMethod
-  public List<Metallica> findAll( ) throws MetallicaServiceException {
-    try {
-      return metallicaDAO.findAll( );
-    } catch( SQLException e ) {
-      throw new MetallicaServiceException( e.getMessage( ) );
-    }
+  public MetallicaService() throws SQLException {
+    Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/metallica_db", "webuser", "password");
+    this.metallicaDAO = new MetallicaDAO(connection);
   }
 
-  @WebMethod
-  public Long create(
-    @WebParam( name = "name" ) String name,          
-    @WebParam( name = "instrument" ) String instrument,
-    @WebParam( name = "entrydate" ) Date entrydate,
-    @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
-  ) throws MetallicaServiceException {
-    try {
-      return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
-    } catch( SQLException e ) {
-      throw new MetallicaServiceException( e.getMessage( ) );
-    }
+  @GET
+  @Path("/all")
+  public List<Metallica> findAll( ) throws SQLException {
+    return metallicaDAO.findAll( );
   }
 
-  @WebMethod
-  public int update(
-    @WebParam( name = "id" ) Long id, 
-    @WebParam( name = "name" ) String name,          
-    @WebParam( name = "instrument" ) String instrument,
-    @WebParam( name = "entrydate" ) Date entrydate,
-    @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
-  ) throws MetallicaServiceException {
-    try {
-      int ret = metallicaDAO.update( id, name, instrument, entrydate, networth, birthdate );
-      if( ret == 0 )
-        throw new MetallicaServiceException( "No member with given ID" );
-      return ret;
-    } catch( SQLException e ) {
-      throw new MetallicaServiceException( e.getMessage( ) );
-    }
-  }
-
-  @WebMethod
-  public int delete(
-    @WebParam( name = "id" ) Long id
-  ) throws MetallicaServiceException {
-    try {
-      int ret = metallicaDAO.delete( id );
-      if( ret == 0 )
-        throw new MetallicaServiceException( "No member with given ID" );
-      return ret;
-    } catch( SQLException e ) {
-      throw new MetallicaServiceException( e.getMessage( ) );
-    }
-  }
-
-  @WebMethod
+  @GET
+  @Path("/filter")
   public List<Metallica> findWithFilters(
-    @WebParam( name = "id" ) Long id, 
-    @WebParam( name = "name" ) String name,                  
-    @WebParam( name = "instrument" ) String instrument,
-    @WebParam( name = "entrydate" ) Date entrydate,
-    @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
-  ) throws MetallicaServiceException {
-    try {
-      return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
-    } catch( SQLException e ) {
-      throw new MetallicaServiceException( e.getMessage( ) );
-    }
+    @QueryParam( "id" ) Long id, 
+    @QueryParam( "name" ) String name,                  
+    @QueryParam( "instrument" ) String instrument,
+    @QueryParam( "entrydate" ) Date entrydate,
+    @QueryParam( "networth" ) Integer networth, 
+    @QueryParam( "birthdate" ) Date birthdate
+  ) throws SQLException {
+    return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
   }
 
 }

@@ -1,40 +1,33 @@
 package ru.ifmo.web.standalone;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import lombok.SneakyThrows;
+import com.sun.jersey.api.container.grizzly2.GrizzlyServerFactory;
+import com.sun.jersey.api.core.ClassNamesResourceConfig;
 import lombok.extern.slf4j.Slf4j;
-import ru.ifmo.web.database.dao.MetallicaDAO;
+import org.glassfish.grizzly.http.server.HttpServer;
 import ru.ifmo.web.service.MetallicaService;
 
-import javax.sql.DataSource;
-import javax.xml.ws.Endpoint;
-import java.io.InputStream;
-import java.util.Properties;
+import java.io.IOException;
 
 @Slf4j
 public class App {
-  public static void main( String... args ) {
-    String url = "http://0.0.0.0:8080/metallica";
+  public static void main( String... args ) throws IOException {
 
-    DataSource dataSource = initDataSource();
+    String url = "http://0.0.0.0:8080";
 
-    Endpoint.publish( url, new MetallicaService( new MetallicaDAO( dataSource ) ) );
-    log.info( "App started" );
+    ClassNamesResourceConfig config = new ClassNamesResourceConfig(MetallicaService.class);
+    log.info("Done creating configs");
+
+    HttpServer server = GrizzlyServerFactory.createHttpServer(url, config);
+    log.info("Done creating server");
+
+    log.info("Starting server");
+    server.start();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+    log.info("App started");
+
+    System.in.read();
   }
 
-  @SneakyThrows
-  private static DataSource initDataSource( ) {
-
-    InputStream dsPropsStream = App.class.getClassLoader( ).getResourceAsStream( "datasource.properties" );
-    Properties dsProps = new Properties( );
-
-    dsProps.load( dsPropsStream );
-
-    HikariConfig hikariConfig = new HikariConfig( dsProps );
-    HikariDataSource dataSource = new HikariDataSource( hikariConfig );
-
-    return dataSource;
-  }
 
 }

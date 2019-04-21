@@ -4,10 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import java.util.Date;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@XmlRootElement
 public class Metallica {
   private Long id;
   private String name;

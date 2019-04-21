@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Slf4j
 public class MetallicaDAO {
-  private final DataSource dataSource;
+  private final Connection conn;
 
   private final String TABLE_NAME = "metallica";
   private final String ID =         "id";
@@ -43,15 +44,14 @@ public class MetallicaDAO {
   }
 
   public List<Metallica> findAll( ) throws SQLException {
-    try( Connection conn = dataSource.getConnection( ) ) {
-      java.sql.Statement statement = conn.createStatement( );
-      StringBuilder query = new StringBuilder( );
+    log.info( "Find all" );
+    java.sql.Statement statement = conn.createStatement( );
+    StringBuilder query = new StringBuilder( );
 
-      statement.execute( query.append( "SELECT " ).append( String.join( ", ", columnNames ) ).append( " FROM " ).append( TABLE_NAME ).toString( ) );
+    statement.execute( query.append( "SELECT " ).append( String.join( ", ", columnNames ) ).append( " FROM " ).append( TABLE_NAME ).toString( ) );
 
-      List<Metallica> result = resultSetToList( statement.getResultSet( ) );
-      return result;
-    }
+    List<Metallica> result = resultSetToList( statement.getResultSet( ) );
+    return result;
   }
 
   public List<Metallica> findWithFilters( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) throws SQLException {
@@ -118,32 +118,28 @@ public class MetallicaDAO {
 
     log.debug( query.toString( ) );
 
-    try( Connection conn = dataSource.getConnection( ) ) {
-      PreparedStatement ps = conn.prepareStatement( query.toString( ) );
-      fillPreparedStatement( ps, statements );
-      ResultSet rs = ps.executeQuery( );
-      return resultSetToList( rs );
-    }
+    PreparedStatement ps = conn.prepareStatement( query.toString( ) );
+    fillPreparedStatement( ps, statements );
+    ResultSet rs = ps.executeQuery( );
+    return resultSetToList( rs );
 
   }
 
   public Long create( String name, String instrument, Date entrydate, Integer networth, Date birthdate ) throws SQLException {
 
-    try( Connection conn = dataSource.getConnection( ) ) {
-      conn.setAutoCommit( false );
+    conn.setAutoCommit( false );
 
-      StringBuilder query = new StringBuilder( );
+    StringBuilder query = new StringBuilder( );
 
-      query.append( "INSERT INTO " ).append( TABLE_NAME ).append( "(" ).append( String.join( ",", columnNames ) ).append( ") VALUES(?,?,?,?,?,?)" );
-      long newId;
+    query.append( "INSERT INTO " ).append( TABLE_NAME ).append( "(" ).append( String.join( ",", columnNames ) ).append( ") VALUES(?,?,?,?,?,?)" );
+    long newId;
 
-      try( java.sql.Statement idStatement = conn.createStatement( ) ) {
-        idStatement.execute( "SELECT nextval('metallica_id_seq') nextval" );
+    try( java.sql.Statement idStatement = conn.createStatement( ) ) {
+      idStatement.execute( "SELECT nextval('metallica_id_seq') nextval" );
 
-        try( ResultSet rs = idStatement.getResultSet( ) ) {
-          rs.next( );
-          newId = rs.getLong( "nextval" );
-        }
+      try( ResultSet rs = idStatement.getResultSet( ) ) {
+        rs.next( );
+        newId = rs.getLong( "nextval" );
       }
 
       try( PreparedStatement stmnt = conn.prepareStatement( query.toString( ) ) ) {
@@ -169,54 +165,52 @@ public class MetallicaDAO {
     
     if( id == null ) return -1;
 
-    try( Connection conn = dataSource.getConnection( ) ) {
-      conn.setAutoCommit( true );
-      StringBuilder query = new StringBuilder( "UPDATE " + TABLE_NAME + " SET id = id," );
-      int i = 1;
-      List<Statement> statements = new ArrayList<>();
+    conn.setAutoCommit( true );
+    StringBuilder query = new StringBuilder( "UPDATE " + TABLE_NAME + " SET id = id," );
+    int i = 1;
+    List<Statement> statements = new ArrayList<>();
 
-      if( name != null ) {
-        query.append( NAME ).append( "= ?," );
-        statements.add( new Statement( i, name, Types.VARCHAR ) );
-        i++;
-      }
+    if( name != null ) {
+      query.append( NAME ).append( "= ?," );
+      statements.add( new Statement( i, name, Types.VARCHAR ) );
+      i++;
+    }
 
-      if( instrument != null ) {
-        query.append( INSTRUMENT ).append( "= ?," );
-        statements.add( new Statement( i, instrument, Types.VARCHAR ) );
-        i++;
-      }
+    if( instrument != null ) {
+      query.append( INSTRUMENT ).append( "= ?," );
+      statements.add( new Statement( i, instrument, Types.VARCHAR ) );
+      i++;
+    }
 
-      if( entrydate != null ) {
-        query.append( ENTRYDATE ).append( "= ?," );
-        statements.add( new Statement( i, entrydate, Types.DATE ) );
-        i++;
-      }
+    if( entrydate != null ) {
+      query.append( ENTRYDATE ).append( "= ?," );
+      statements.add( new Statement( i, entrydate, Types.DATE ) );
+      i++;
+    }
 
-      if( networth != null ) {
-        query.append( NETWORTH ).append( "= ?," );
-        statements.add( new Statement( i, networth, Types.INTEGER ) );
-        i++;
-      }
+    if( networth != null ) {
+      query.append( NETWORTH ).append( "= ?," );
+      statements.add( new Statement( i, networth, Types.INTEGER ) );
+      i++;
+    }
 
-      if( birthdate != null ) {
-        query.append( BIRTHDATE ).append( "= ?," );
-        statements.add( new Statement( i, birthdate, Types.DATE ) );
-        i++;
-      }
+    if( birthdate != null ) {
+      query.append( BIRTHDATE ).append( "= ?," );
+      statements.add( new Statement( i, birthdate, Types.DATE ) );
+      i++;
+    }
 
-      query.deleteCharAt( query.length() - 1 );
+    query.deleteCharAt( query.length() - 1 );
 
-      statements.add( new Statement( i, id, Types.BIGINT ) );
-      query.append(" WHERE id = ?");
+    statements.add( new Statement( i, id, Types.BIGINT ) );
+    query.append(" WHERE id = ?");
 
-      log.debug( query.toString( ) );
+    log.debug( query.toString( ) );
 
-      try( PreparedStatement ps = conn.prepareStatement( query.toString( ) ) ) {
-        fillPreparedStatement( ps, statements );
-        int updated = ps.executeUpdate( );
-        return updated;
-      }
+    try( PreparedStatement ps = conn.prepareStatement( query.toString( ) ) ) {
+      fillPreparedStatement( ps, statements );
+      int updated = ps.executeUpdate( );
+      return updated;
     }
   }
 
@@ -225,12 +219,10 @@ public class MetallicaDAO {
 
     log.debug("Delete id {}", id);
 
-    try( Connection conn = dataSource.getConnection( ) ) {
-      conn.setAutoCommit( true );
-      try( PreparedStatement ps = conn.prepareStatement( "DELETE FROM " + TABLE_NAME + " WHERE id = ?" ) ) {
-        ps.setLong( 1, id );
-        return ps.executeUpdate( );
-      }
+    conn.setAutoCommit( true );
+    try( PreparedStatement ps = conn.prepareStatement( "DELETE FROM " + TABLE_NAME + " WHERE id = ?" ) ) {
+      ps.setLong( 1, id );
+      return ps.executeUpdate( );
     }
   }
 

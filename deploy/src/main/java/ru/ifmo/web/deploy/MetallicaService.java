@@ -1,68 +1,44 @@
 package ru.ifmo.web.deploy;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import ru.ifmo.web.database.dao.MetallicaDAO;
 import ru.ifmo.web.database.entity.Metallica;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-@WebService( serviceName = "metallica", targetNamespace = "metallica_namespace" )
-@AllArgsConstructor
-@NoArgsConstructor
+@RequestScoped
+@Path("/metallica")
+@Produces({MediaType.APPLICATION_JSON})
 public class MetallicaService {
   @Inject
   private MetallicaDAO metallicaDAO;
 
   @WebMethod
+  @GET
+  @Path("/all")
   public List<Metallica> findAll( ) throws SQLException {
     return metallicaDAO.findAll( );
   }
 
   @WebMethod
-  public Long create(
-    @WebParam( name = "name" ) String name,          
-    @WebParam( name = "instrument" ) String instrument,
-    @WebParam( name = "entrydate" ) Date entrydate,
-    @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
-  ) throws SQLException {
-    return metallicaDAO.create( name, instrument, entrydate, networth, birthdate );
-  }
-
-  @WebMethod
-  public int update(
-    @WebParam( name = "id" ) Long id, 
-    @WebParam( name = "name" ) String name,          
-    @WebParam( name = "instrument" ) String instrument,
-    @WebParam( name = "entrydate" ) Date entrydate,
-    @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
-  ) throws SQLException {
-    return metallicaDAO.update( id, name, instrument, entrydate, networth, birthdate );
-  }
-
-  @WebMethod
-  public int delete(
-    @WebParam( name = "id" ) Long id
-  ) throws SQLException {
-    return metallicaDAO.delete( id );
-  }
-
-  @WebMethod
+  @GET
+  @Path("/filter")
   public List<Metallica> findWithFilters(
-    @WebParam( name = "id" ) Long id, 
-    @WebParam( name = "name" ) String name,          
-    @WebParam( name = "instrument" ) String instrument,
-    @WebParam( name = "entrydate" ) Date entrydate,
-    @WebParam( name = "networth" ) Integer networth, 
-    @WebParam( name = "birthdate" ) Date birthdate
+    @QueryParam( "id" ) Long id, 
+    @QueryParam( "name" ) String name,          
+    @QueryParam( "instrument" ) String instrument,
+    @QueryParam( "entrydate" ) Date entrydate,
+    @QueryParam( "networth" ) Integer networth, 
+    @QueryParam( "birthdate" ) Date birthdate
   ) throws SQLException {
     return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
   }

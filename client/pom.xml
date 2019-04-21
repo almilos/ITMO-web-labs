@@ -5,7 +5,7 @@
     <parent>
         <artifactId>web-lab</artifactId>
         <groupId>ru.ifmo</groupId>
-        <version>1.0</version>
+        <version>4.0</version>
     </parent>
     <artifactId>client</artifactId>
     <modelVersion>4.0.0</modelVersion>
@@ -15,6 +15,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.5.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -29,9 +30,7 @@
                             <mainClass>ru.ifmo.web.client.Client</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <desctiptorRef>jar-with-dependencies</desctiptorRef>
-                    </descriptorRefs>
+                    <descriptor>src/assembly/depmerge.xml</descriptor>
                 </configuration>
             </plugin>
 
@@ -45,9 +44,16 @@
         </dependency>
         <dependency>
             <groupId>ru.ifmo</groupId>
-            <artifactId>standalone</artifactId>
-            <classifier>client</classifier>
-            <version>1.0</version>
+            <artifactId>database</artifactId>
+            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
         </dependency>
     </dependencies>
 
