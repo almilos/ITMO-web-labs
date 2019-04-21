@@ -3,7 +3,6 @@ package ru.ifmo.web.client;
 import ru.ifmo.web.database.entity.Metallica;
 
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -51,13 +50,13 @@ public class Client {
           String instrument = readString( reader );
 
           System.out.println( "entrydate(yyyy-mm-dd):" );
-          XMLGregorianCalendar entrydate = readDate( reader );
+          Date entrydate = readDate( reader );
 
           System.out.println( "networth:" );
           Integer networth = readInteger( reader );
 
           System.out.println( "birthdate(yyyy-mm-dd):" );
-          XMLGregorianCalendar birthdate = readDate( reader );
+          Date birthdate = readDate( reader );
 
           System.out.println( "Found:" );
 
@@ -86,21 +85,13 @@ public class Client {
     return trim;
   }
 
-  private static XMLGregorianCalendar readDate( BufferedReader reader ) {
+  private static Date readDate( BufferedReader reader ) {
     try {
       SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd" );
 
       Date rd = sdf.parse( reader.readLine( ) );
-      XMLGregorianCalendar birthdate;
+      return rd;
 
-      GregorianCalendar c = new GregorianCalendar( );
-
-      if( rd != null ) {
-        c.setTime( rd );
-        return DatatypeFactory.newInstance( ).newXMLGregorianCalendar( c );
-      } else {
-        return null;
-      }
     } catch( java.lang.Exception e ) {
       return null;
     }

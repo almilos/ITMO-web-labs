@@ -15,6 +15,8 @@ import javax.ws.rs.core.MediaType;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,6 +27,7 @@ import java.sql.DriverManager;
 @Produces({MediaType.APPLICATION_JSON})
 public class MetallicaService {
   private MetallicaDAO metallicaDAO;
+  private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
   public MetallicaService() throws SQLException {
     Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/metallica_db", "webuser", "password");
@@ -43,11 +46,23 @@ public class MetallicaService {
     @QueryParam( "id" ) Long id, 
     @QueryParam( "name" ) String name,                  
     @QueryParam( "instrument" ) String instrument,
-    @QueryParam( "entrydate" ) Date entrydate,
+    @QueryParam( "entrydate" ) String entrydate,
     @QueryParam( "networth" ) Integer networth, 
-    @QueryParam( "birthdate" ) Date birthdate
-  ) throws SQLException {
-    return metallicaDAO.findWithFilters( id, name, instrument, entrydate, networth, birthdate );
+    @QueryParam( "birthdate" ) String birthdate
+  ) throws SQLException, ParseException {
+    Date bd = null;
+    Date ed = null;
+    try {
+      if( birthdate != null ) bd = sdf.parse(birthdate);
+    } catch (ParseException e) {
+      bd = null;
+    }
+    try {
+      if( entrydate != null ) ed = sdf.parse(entrydate);
+    } catch (ParseException e) {
+      ed = null;
+    }
+    return metallicaDAO.findWithFilters( id, name, instrument, ed, networth, bd );
   }
 
 }

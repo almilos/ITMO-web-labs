@@ -259,8 +259,9 @@ public class MetallicaDAO {
           case Types.VARCHAR:
             ps.setString( statement.number, (String) statement.getValue( ) );
             break;
-          case Types.TIMESTAMP:
-            ps.setDate( statement.number, (java.sql.Date) statement.getValue( ) );
+          case Types.DATE:
+            java.sql.Date sqlsd = new java.sql.Date( ((Date)statement.getValue()).getTime());
+            ps.setDate( statement.number, sqlsd );
             break;
           default:
             throw new RuntimeException( statement.toString( ) );
