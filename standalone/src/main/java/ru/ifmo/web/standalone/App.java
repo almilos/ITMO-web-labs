@@ -5,6 +5,8 @@ import com.sun.jersey.api.core.ClassNamesResourceConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.grizzly.http.server.HttpServer;
 import ru.ifmo.web.service.MetallicaService;
+import ru.ifmo.web.service.exception.MetallicaInternalExceptionMapper;
+import ru.ifmo.web.service.exception.MetallicaIdNotFoundExceptionMapper;
 
 import java.io.IOException;
 
@@ -14,7 +16,7 @@ public class App {
 
     String url = "http://0.0.0.0:8080";
 
-    ClassNamesResourceConfig config = new ClassNamesResourceConfig(MetallicaService.class);
+    ClassNamesResourceConfig config = new ClassNamesResourceConfig(MetallicaService.class, MetallicaInternalExceptionMapper.class, MetallicaIdNotFoundExceptionMapper.class);
     log.info("Done creating configs");
 
     HttpServer server = GrizzlyServerFactory.createHttpServer(url, config);

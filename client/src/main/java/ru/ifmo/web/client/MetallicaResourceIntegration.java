@@ -2,6 +2,7 @@ package ru.ifmo.web.client;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.ifmo.web.database.entity.Metallica;
+import ru.ifmo.web.client.ReqResult;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -24,20 +25,21 @@ public class MetallicaResourceIntegration {
 
   private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-  public List<Metallica> findAll() {
+  public ReqResult<List<Metallica>> findAll() {
     Client client = Client.create();
     WebResource webResource = client.resource(findAllUrl);
     ClientResponse response =
         webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-      throw new IllegalStateException("Request failed");
+      GenericType<String> type = new GenericType<String>() {};
+      return new ReqResult<>(true, response.getEntity(type), null);
     }
     GenericType<List<Metallica>> type = new GenericType<List<Metallica>>() {
     };
-    return response.getEntity(type);
+    return new ReqResult<>(false, null, response.getEntity(type));
   }
 
-  public List<Metallica> findWithFilters( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
+  public ReqResult<List<Metallica>> findWithFilters( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
     Client client = Client.create();
     WebResource webResource = client.resource(filterUrl);
     if (id != null) {
@@ -66,14 +68,15 @@ public class MetallicaResourceIntegration {
 
     ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-      throw new IllegalStateException("Request failed");
+      GenericType<String> type = new GenericType<String>() {};
+      return new ReqResult<>(true, response.getEntity(type), null);
     }
     GenericType<List<Metallica>> type = new GenericType<List<Metallica>>() {
     };
-    return response.getEntity(type);
+    return new ReqResult<>(false, null, response.getEntity(type));
   }
 
-  public Long create( String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
+  public ReqResult<Long> create( String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
     Client client = Client.create();
     WebResource webResource = client.resource(createUrl);
 
@@ -99,14 +102,16 @@ public class MetallicaResourceIntegration {
 
     ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class);
     if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-      throw new IllegalStateException("Request failed");
+      GenericType<String> type = new GenericType<String>() {};
+      return new ReqResult<>(true, response.getEntity(type), null);
     }
     GenericType<String> type = new GenericType<String>() {
     };
-    return Long.parseLong( response.getEntity(type) );
+    //return Long.parseLong( response.getEntity(type) );
+    return new ReqResult<>(false, null, Long.parseLong(response.getEntity(type)));
   }
 
-  public int update( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
+  public ReqResult<Integer> update( Long id, String name, String instrument, Date entrydate, Integer networth, Date birthdate ) {
     Client client = Client.create();
     WebResource webResource = client.resource(updateUrl);
 
@@ -136,14 +141,15 @@ public class MetallicaResourceIntegration {
 
     ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class);
     if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-      throw new IllegalStateException("Request failed");
+      GenericType<String> type = new GenericType<String>() {};
+      return new ReqResult<>(true, response.getEntity(type), null);
     }
     GenericType<String> type = new GenericType<String>() {
     };
-    return Integer.parseInt( response.getEntity(type) );
+    return new ReqResult<>(false, null, Integer.parseInt(response.getEntity(type)));
   }
 
-  public int delete( Long id ) {
+  public ReqResult<Integer> delete( Long id ) {
     Client client = Client.create();
     WebResource webResource = client.resource(deleteUrl);
 
@@ -153,10 +159,11 @@ public class MetallicaResourceIntegration {
 
     ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).delete(ClientResponse.class);
     if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
-      throw new IllegalStateException("Request failed");
+      GenericType<String> type = new GenericType<String>() {};
+      return new ReqResult<>(true, response.getEntity(type), null);
     }
     GenericType<String> type = new GenericType<String>() {
     };
-    return Integer.parseInt( response.getEntity(type) );
+    return new ReqResult<>(false, null, Integer.parseInt(response.getEntity(type)));
   }
 }

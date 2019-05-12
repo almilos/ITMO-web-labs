@@ -10,6 +10,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 public class Client {
   public static void main( String... args ) throws IOException {
@@ -34,8 +35,13 @@ public class Client {
 
         case 1:
           System.out.println( "Found:" );
-          metallicaPort.findAll( ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
 
+          ReqResult<List<Metallica>> all = metallicaPort.findAll();
+          if (all.isErr()) {
+            System.out.println(all.getErrorMessage());
+          } else {
+            all.getResult().stream().map(Client::metallicaToString).forEach(System.out::println);
+          }
           currentState = -1;
           break;
 
@@ -60,8 +66,12 @@ public class Client {
 
           System.out.println( "Found:" );
 
-          metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate ).stream( ).map( Client::metallicaToString ).forEach( System.out::println );
-
+          ReqResult<List<Metallica>> res = metallicaPort.findWithFilters( id, name, instrument, entrydate, networth, birthdate);
+          if (res.isErr()) {
+            System.out.println(res.getErrorMessage());
+          } else {
+            res.getResult().stream().map(Client::metallicaToString).forEach(System.out::println);
+          }
           currentState = -1;
 
           break;
@@ -101,12 +111,12 @@ public class Client {
 
           System.out.println( "birthdate(yyyy-mm-dd):" );
           Date c_birthdate = readDate( reader );
-          Long new_id = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
 
-          if( new_id != null ) {
-            System.out.println( "New ID " + new_id.toString( ) );
+          ReqResult<Long> longReqResult = metallicaPort.create( c_name, c_instrument, c_entrydate, c_networth, c_birthdate );
+          if (longReqResult.isErr()) {
+            System.out.println(longReqResult.getErrorMessage());
           } else {
-            System.out.println( "SQL query failed" );
+            System.out.println("New ID: " + longReqResult.getResult());
           }
 
           currentState = -1;
@@ -136,12 +146,11 @@ public class Client {
           System.out.println( "birthdate(yyyy-mm-dd):" );
           Date u_birthdate = readDate( reader );
 
-          int u_ret = metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
-
-          if( u_ret > 0 ) {
-            System.out.println( "OK" );
+          ReqResult<Integer> update = metallicaPort.update( u_id, u_name, u_instrument, u_entrydate, u_networth, u_birthdate );
+          if (update.isErr()) {
+            System.out.println(update.getErrorMessage());
           } else {
-            System.out.println( "FAIL" );
+            System.out.println("OK");
           }
           currentState = -1;
           break;   
@@ -155,12 +164,11 @@ public class Client {
             break;
           }
 
-          int d_ret = metallicaPort.delete( d_id );
-
-          if( d_ret > 0 ) {
-            System.out.println( "OK" );
+          ReqResult<Integer> delete = metallicaPort.delete(d_id);
+          if (delete.isErr()) {
+            System.out.println(delete.getErrorMessage());
           } else {
-            System.out.println( "FAIL" );
+            System.out.println("OK");
           }
           currentState = -1;
           break;

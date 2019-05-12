@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.ifmo.web.standalone.App;
 import ru.ifmo.web.database.dao.MetallicaDAO;
 import ru.ifmo.web.database.entity.Metallica;
+import ru.ifmo.web.service.exception.MetallicaInternalException;
+import ru.ifmo.web.service.exception.MetallicaIdNotFoundException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -39,8 +41,12 @@ public class MetallicaService {
 
   @GET
   @Path("/all")
-  public List<Metallica> findAll( ) throws SQLException {
-    return metallicaDAO.findAll( );
+  public List<Metallica> findAll( ) throws MetallicaInternalException {
+    try {
+      return metallicaDAO.findAll( );
+    } catch( SQLException e ) {
+      throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
+    }
   }
 
   @GET
@@ -52,7 +58,7 @@ public class MetallicaService {
     @QueryParam( "entrydate" ) String entrydate,
     @QueryParam( "networth" ) Integer networth, 
     @QueryParam( "birthdate" ) String birthdate
-  ) throws SQLException, ParseException {
+  ) throws MetallicaInternalException {
     Date bd = null;
     Date ed = null;
     try {
@@ -65,7 +71,11 @@ public class MetallicaService {
     } catch (ParseException e) {
       ed = null;
     }
-    return metallicaDAO.findWithFilters( id, name, instrument, ed, networth, bd );
+    try {
+      return metallicaDAO.findWithFilters( id, name, instrument, ed, networth, bd );
+    } catch( SQLException e ) {
+      throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
+    }
   }
 
   @POST
@@ -76,7 +86,7 @@ public class MetallicaService {
     @QueryParam( "entrydate" ) String entrydate,
     @QueryParam( "networth" ) Integer networth, 
     @QueryParam( "birthdate" ) String birthdate
-  ) throws SQLException, ParseException {
+  ) throws MetallicaInternalException {
     Date bd = null;
     Date ed = null;
     try {
@@ -89,7 +99,11 @@ public class MetallicaService {
     } catch (ParseException e) {
       ed = null;
     }
-    return metallicaDAO.create( name, instrument, ed, networth, bd ) + "";
+    try {
+      return metallicaDAO.create( name, instrument, ed, networth, bd ) + "";
+    } catch( SQLException e ) {
+      throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
+    }
   }
 
   @PUT
@@ -101,7 +115,7 @@ public class MetallicaService {
     @QueryParam( "entrydate" ) String entrydate,
     @QueryParam( "networth" ) Integer networth, 
     @QueryParam( "birthdate" ) String birthdate
-  ) throws SQLException, ParseException {
+  ) throws MetallicaInternalException, MetallicaIdNotFoundException {
     Date bd = null;
     Date ed = null;
     try {
@@ -114,14 +128,30 @@ public class MetallicaService {
     } catch (ParseException e) {
       ed = null;
     }
-    return metallicaDAO.update( id, name, instrument, ed, networth, bd ) + "";
+    try {
+      int cnt = metallicaDAO.update( id, name, instrument, ed, networth, bd );
+      if( cnt == 0 ) {
+        throw new MetallicaIdNotFoundException( "No record id: " + id );
+      }
+      return cnt + "";
+    } catch( SQLException e ) {
+      throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
+    }
   }
 
   @DELETE
   @Path("/delete")
   public String delete(
     @QueryParam( "id" ) Long id
-  ) throws SQLException {
-    return metallicaDAO.delete( id ) + "";
+  ) throws MetallicaInternalException, MetallicaIdNotFoundException {
+    try {
+      int cnt = metallicaDAO.delete( id );
+      if( cnt == 0 ) {
+        throw new MetallicaIdNotFoundException( "No record id: " + id );
+      }
+      return cnt + "";
+    } catch( SQLException e ) {
+      throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
+    }
   }
 }
