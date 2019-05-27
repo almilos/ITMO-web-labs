@@ -14,27 +14,23 @@ import java.util.Properties;
 
 @Slf4j
 public class App {
-  public static void main( String... args ) {
-    String url = "http://0.0.0.0:8080/metallica";
+    public static void main(String... args) {
+        String url = "http://0.0.0.0:8081/metallica";
 
-    DataSource dataSource = initDataSource();
+        DataSource dataSource = initDataSource();
+        System.setProperty("com.sun.xml.ws.fault.SOAPFaultBuilder.disableCaptureStackTrace",
+                "false");
+        Endpoint.publish(url, new MetallicaService(new MetallicaDAO(dataSource)));
+        log.info("Application started");
+    }
 
-    Endpoint.publish( url, new MetallicaService( new MetallicaDAO( dataSource ) ) );
-    log.info( "App started" );
-  }
-
-  @SneakyThrows
-  private static DataSource initDataSource( ) {
-
-    InputStream dsPropsStream = App.class.getClassLoader( ).getResourceAsStream( "datasource.properties" );
-    Properties dsProps = new Properties( );
-
-    dsProps.load( dsPropsStream );
-
-    HikariConfig hikariConfig = new HikariConfig( dsProps );
-    HikariDataSource dataSource = new HikariDataSource( hikariConfig );
-
-    return dataSource;
-  }
-
+    @SneakyThrows
+    private static DataSource initDataSource() {
+        InputStream dsPropsStream = App.class.getClassLoader().getResourceAsStream("datasource.properties");
+        Properties dsProps = new Properties();
+        dsProps.load(dsPropsStream);
+        HikariConfig hikariConfig = new HikariConfig(dsProps);
+        HikariDataSource dataSource = new HikariDataSource(hikariConfig);
+        return dataSource;
+    }
 }

@@ -1,5 +1,20 @@
 package ru.ifmo.web.client;
 
+import lombok.SneakyThrows;
+import org.apache.juddi.api_v3.AccessPointType;
+import org.uddi.api_v3.AccessPoint;
+import org.uddi.api_v3.BindingTemplate;
+import org.uddi.api_v3.BindingTemplates;
+import org.uddi.api_v3.BusinessDetail;
+import org.uddi.api_v3.BusinessEntity;
+import org.uddi.api_v3.BusinessService;
+import org.uddi.api_v3.Name;
+import org.uddi.api_v3.ServiceDetail;
+
+import javax.xml.ws.BindingProvider;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.BufferedReader;
@@ -11,12 +26,22 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class Client {
+  private static JUDDIClient juddiClient;
+  private static MetallicaService metallicaPort;
   public static void main( String... args ) throws IOException {
-    URL url = new URL( "http://localhost:8080/metallica?wsdl" );
-    Metallica_Service metallicaService = new Metallica_Service( url );
-    MetallicaService metallicaPort = metallicaService.getMetallicaServicePort( );
+    URL url = new URL( "http://localhost:8081/metallica?wsdl" );
+    Metallica_Service metallicaService = new Metallica_Service( );
+    metallicaPort = metallicaService.getMetallicaServicePort( );
+
 
     BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
+    System.out.println("Enter JUDDI username");
+    String username = reader.readLine().trim();
+    System.out.println("Enter JUDDI user password");
+    String password = reader.readLine().trim();
+    juddiClient = new JUDDIClient("META-INF/uddi.xml");
+    juddiClient.authenticate(username, password);
+
     int currentState = -1;
 
     Thread thr;
@@ -29,6 +54,10 @@ public class Client {
           System.out.println( "3. Add member" );
           System.out.println( "4. Update member" );
           System.out.println( "5. Delete member" );
+          System.out.println( "6. List all businesses" );
+          System.out.println( "7. Register a business" );
+          System.out.println( "8. Register a service" );
+          System.out.println( "9. Find and use a service" );
           System.out.println( "0. Exit" );
           currentState = readState( currentState, reader );
           break;
@@ -198,12 +227,123 @@ public class Client {
         case 0:
           return;
 
+        case 6:
+          listBusinesses(null);
+          currentState = -1;
+          break;
+        case 7:
+          System.out.println("Enter business name");
+          String bn = readString(reader);
+          if (bn != null) {
+            createBusiness(bn);
+          }
+          currentState = -1;
+          break;
+        case 8:
+          listBusinesses(null);
+          String bk;
+          do {
+            System.out.println("Enter business key");
+            bk = readString(reader);
+          } while (bk == null);
+
+          String sn;
+          do {
+            System.out.println("Enter service name");
+            sn = readString(reader);
+          } while (sn == null);
+
+          String surl;
+          do {
+            System.out.println("Enter wsdl link");
+            surl = readString(reader);
+          } while (surl == null);
+          createService(bk, sn, surl);
+          currentState = -1;
+          break;
+        case 9:
+          System.out.println("Enter service name");
+          String fsn = readString(reader);
+          filterServices(fsn);
+          System.out.println("Enter service key");
+          String key = readString(reader);
+          if (key != null) {
+            useService(key);
+          }
+          currentState = -1;
+          break;
+        
         default:
           currentState = -1;
           break;
       }
     }
   }
+
+  @SneakyThrows
+    private static void useService(String serviceKey) {
+
+        ServiceDetail serviceDetail = juddiClient.getService(serviceKey.trim());
+        if (serviceDetail == null || serviceDetail.getBusinessService() == null || serviceDetail.getBusinessService().isEmpty()) {
+            System.out.printf("Can not find service by key '%s'\b", serviceKey);
+            return;
+        }
+        List<BusinessService> services = serviceDetail.getBusinessService();
+        BusinessService businessService = services.get(0);
+        BindingTemplates bindingTemplates = businessService.getBindingTemplates();
+        if (bindingTemplates == null || bindingTemplates.getBindingTemplate().isEmpty()) {
+            System.out.printf("No binding template found for service '%s' '%s'\n", serviceKey, businessService.getBusinessKey());
+            return;
+        }
+        for (BindingTemplate bindingTemplate : bindingTemplates.getBindingTemplate()) {
+            AccessPoint accessPoint = bindingTemplate.getAccessPoint();
+            if (accessPoint.getUseType().equals(AccessPointType.END_POINT.toString())) {
+                String value = accessPoint.getValue();
+                System.out.printf("Use endpoint '%s'\n", value);
+                changeEndpointUrl(value);
+                return;
+            }
+        }
+        System.out.printf("No endpoint found for service '%s'\n", serviceKey);
+    }
+
+    @SneakyThrows
+    private static void createService(String businessKey, String serviceName, String wsdlUrl) {
+        List<ServiceDetail> serviceDetails = juddiClient.publishUrl(businessKey.trim(), serviceName.trim(), wsdlUrl.trim());
+        System.out.printf("Services published from wsdl %s\n", wsdlUrl);
+        JUDDIUtil.printServicesInfo(serviceDetails.stream()
+                .map(ServiceDetail::getBusinessService)
+                .flatMap(List::stream)
+                .collect(Collectors.toList())
+        );
+    }
+
+    @SneakyThrows
+    public static void createBusiness(String businessName) {
+        businessName = businessName.trim();
+        BusinessDetail business = juddiClient.createBusiness(businessName);
+        System.out.println("New business was created");
+        for (BusinessEntity businessEntity : business.getBusinessEntity()) {
+            System.out.printf("Key: '%s'\n", businessEntity.getBusinessKey());
+            System.out.printf("Name: '%s'\n", businessEntity.getName().stream().map(Name::getValue).collect(Collectors.joining(" ")));
+        }
+    }
+
+    public static void changeEndpointUrl(String endpointUrl) {
+        ((BindingProvider) metallicaPort).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointUrl.trim());
+    }
+
+
+    @SneakyThrows
+    private static void filterServices(String filterArg) {
+        List<BusinessService> services = juddiClient.getServices(filterArg);
+        JUDDIUtil.printServicesInfo(services);
+    }
+
+    @SneakyThrows
+    private static void listBusinesses(Void ignored) {
+        JUDDIUtil.printBusinessInfo(juddiClient.getBusinessList().getBusinessInfos());
+    }
 
   private static String readString( BufferedReader reader ) throws IOException {
     String trim = reader.readLine( ).trim( );
