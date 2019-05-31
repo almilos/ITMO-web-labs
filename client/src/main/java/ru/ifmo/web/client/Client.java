@@ -10,11 +10,26 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.MessageContext;
+
 public class Client {
   public static void main( String... args ) throws IOException {
     URL url = new URL( "http://localhost:8080/metallica?wsdl" );
     Metallica_Service metallicaService = new Metallica_Service( url );
     MetallicaService metallicaPort = metallicaService.getMetallicaServicePort( );
+
+    Map<String, Object> requestContext = ((BindingProvider) metallicaPort).getRequestContext();
+		Map<String, List<String>> requestHeaders = new HashMap<String, List<String>>();
+		requestHeaders.put("username", Arrays.asList("user"));
+    requestHeaders.put("password", Arrays.asList("pass"));
+
+		requestContext.put(MessageContext.HTTP_REQUEST_HEADERS, requestHeaders);
 
     BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
     int currentState = -1;
