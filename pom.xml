@@ -16,8 +16,8 @@
     </properties>
 
     <modules>
-        <module>database</module>
         <module>standalone</module>
+        <module>database</module>
         <module>client</module>
         <module>deploy</module>
     </modules>

@@ -8,6 +8,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
 import java.util.List;
 import javax.ws.rs.core.MediaType;
@@ -23,10 +24,14 @@ public class MetallicaResourceIntegration {
   private final String updateUrl = "http://localhost:8080/metallica/update";
   private final String deleteUrl = "http://localhost:8080/metallica/delete";
 
+  private final String user = "user";
+  private final String pass = "pass";
+
   private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
   public ReqResult<List<Metallica>> findAll() {
     Client client = Client.create();
+    client.addFilter(new HTTPBasicAuthFilter(user, pass));
     WebResource webResource = client.resource(findAllUrl);
     ClientResponse response =
         webResource.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);

@@ -8,6 +8,7 @@ import ru.ifmo.web.database.dao.MetallicaDAO;
 import ru.ifmo.web.database.entity.Metallica;
 import ru.ifmo.web.service.exception.MetallicaInternalException;
 import ru.ifmo.web.service.exception.MetallicaIdNotFoundException;
+import ru.ifmo.web.service.AuthFilter;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -22,15 +23,22 @@ import java.util.Date;
 import java.util.List;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import javax.ws.rs.ext.Provider;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+
+import javax.annotation.security.RolesAllowed;
+import javax.annotation.security.DenyAll;
 
 @Data
 @Slf4j
 @Path("/metallica")
 @Produces({MediaType.APPLICATION_JSON})
-public class MetallicaService {
+@Provider
+public class MetallicaService  {
   private MetallicaDAO metallicaDAO;
   private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
