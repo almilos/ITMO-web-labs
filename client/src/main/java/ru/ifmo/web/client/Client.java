@@ -4,13 +4,17 @@ import ru.ifmo.web.database.entity.Metallica;
 
 import javax.xml.datatype.DatatypeFactory;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 
 public class Client {
   public static void main( String... args ) throws IOException {
@@ -29,6 +33,7 @@ public class Client {
           System.out.println( "3. Add member" );
           System.out.println( "4. Update member" );
           System.out.println( "5. Delete member" );
+          System.out.println( "6. Create member with file attach" );
           System.out.println( "0. Exit" );
           currentState = readState( currentState, reader );
           break;
@@ -172,6 +177,63 @@ public class Client {
           }
           currentState = -1;
           break;
+        
+        case 6:
+          System.out.println( "name:" );
+          String s_name = readString( reader );
+          if( s_name == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "instrument:" );
+          String s_instrument = readString( reader );
+          if( s_instrument == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "entrydate(yyyy-mm-dd):" );
+          Date s_entrydate = readDate( reader );
+          if( s_entrydate == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "networth:" );
+          Integer s_networth = readInteger( reader );
+          if( s_networth == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          System.out.println( "birthdate(yyyy-mm-dd):" );
+          Date s_birthdate = readDate( reader );
+
+          System.out.println( "filename:" );
+          String s_file = readString( reader );
+          if( s_file == null ) {
+            System.out.println( "Value is invalid or empty" );
+            currentState = -1;
+            break;
+          }
+
+          File file = new File(s_file);
+          byte[] bytearray = Files.readAllBytes(file.toPath());
+
+          ReqResult<Long> s_longReqResult = metallicaPort.submit( s_name, s_instrument, s_entrydate, s_networth, s_birthdate, bytearray );
+          if (s_longReqResult.isErr()) {
+            System.out.println(s_longReqResult.getErrorMessage());
+          } else {
+            System.out.println("New ID: " + s_longReqResult.getResult());
+          }
+
+          currentState = -1;
+        break;
 
         case 0:
           return;

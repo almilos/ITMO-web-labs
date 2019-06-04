@@ -22,6 +22,7 @@ public class MetallicaResourceIntegration {
   private final String createUrl = "http://localhost:8080/metallica/create";
   private final String updateUrl = "http://localhost:8080/metallica/update";
   private final String deleteUrl = "http://localhost:8080/metallica/delete";
+  private final String submitUrl = "http://localhost:8080/metallica/submit";
 
   private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -107,7 +108,45 @@ public class MetallicaResourceIntegration {
     }
     GenericType<String> type = new GenericType<String>() {
     };
-    //return Long.parseLong( response.getEntity(type) );
+    return new ReqResult<>(false, null, Long.parseLong(response.getEntity(type)));
+  }
+
+  public ReqResult<Long> submit( String name, String instrument, Date entrydate, Integer networth, Date birthdate, byte[] binfield ) {
+    Client client = Client.create();
+    WebResource webResource = client.resource(submitUrl);
+
+    if (name != null) {
+      webResource = webResource.queryParam("name", name);
+    }
+
+    if (instrument != null) {
+      webResource = webResource.queryParam("instrument", instrument);
+    }
+
+    if (entrydate != null) {
+      webResource = webResource.queryParam("entrydate", sdf.format(entrydate));
+    }
+
+    if (networth != null) {
+      webResource = webResource.queryParam("networth", networth + "");
+    }
+
+    if (birthdate != null) {
+      webResource = webResource.queryParam("birthdate", sdf.format(birthdate));
+    }
+
+    if ( binfield != null) {
+      webResource = webResource.queryParam("binfield", new String(binfield));
+    }
+
+    ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class);
+
+    if (response.getStatus() != ClientResponse.Status.OK.getStatusCode()) {
+      GenericType<String> type = new GenericType<String>() {};
+      return new ReqResult<>(true, response.getEntity(type), null);
+    }
+    GenericType<String> type = new GenericType<String>() {
+    };
     return new ReqResult<>(false, null, Long.parseLong(response.getEntity(type)));
   }
 

@@ -71,7 +71,7 @@ public class MetallicaService {
     } catch (ParseException e) {
       ed = null;
     }
-    return metallicaDAO.create( name, instrument, ed, networth, bd ) + "";
+    return metallicaDAO.create( name, instrument, ed, networth, bd, null ) + "";
   }
 
   @WebMethod

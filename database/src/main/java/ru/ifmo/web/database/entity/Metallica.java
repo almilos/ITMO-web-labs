@@ -19,4 +19,5 @@ public class Metallica {
   private Date entrydate;
   private Integer networth;
   private Date birthdate;
+  private byte[] binfield;
 }

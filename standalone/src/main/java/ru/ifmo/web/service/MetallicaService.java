@@ -16,6 +16,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import javax.ws.rs.core.MediaType;
 import java.sql.SQLException;
 import java.util.Date;
@@ -25,6 +26,9 @@ import java.text.ParseException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 
 @Data
 @Slf4j
@@ -100,7 +104,7 @@ public class MetallicaService {
       ed = null;
     }
     try {
-      return metallicaDAO.create( name, instrument, ed, networth, bd ) + "";
+      return metallicaDAO.create( name, instrument, ed, networth, bd, null ) + "";
     } catch( SQLException e ) {
       throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
     }
@@ -134,6 +138,38 @@ public class MetallicaService {
         throw new MetallicaIdNotFoundException( "No record id: " + id );
       }
       return cnt + "";
+    } catch( SQLException e ) {
+      throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
+    }
+  }
+
+  @POST
+  @Path("/submit")
+  public String submit(
+    @QueryParam( "name" ) String name,                  
+    @QueryParam( "instrument" ) String instrument,
+    @QueryParam( "entrydate" ) String entrydate,
+    @QueryParam( "networth" ) Integer networth, 
+    @QueryParam( "birthdate" ) String birthdate,
+    @QueryParam( "binfield" ) String binfield
+  ) throws MetallicaInternalException {
+
+    Date bd = null;
+    Date ed = null;
+    byte[] bf = null;
+
+    try {
+      if( birthdate != null ) bd = sdf.parse(birthdate);
+    } catch (ParseException e) {
+      bd = null;
+    }
+    try {
+      if( entrydate != null ) ed = sdf.parse(entrydate);
+    } catch (ParseException e) {
+      ed = null;
+    }
+    try {
+      return metallicaDAO.create( name, instrument, ed, networth, bd, binfield.getBytes() ) + "";
     } catch( SQLException e ) {
       throw new MetallicaInternalException( e.getMessage( ) + " " + e.getSQLState( ) );
     }
